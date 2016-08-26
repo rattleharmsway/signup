@@ -142,8 +142,12 @@ def caesar(string, shift):
     for ch in string:
         if ch.isalpha():
             stayInAlphabet = ord(ch) + shift
-            if stayInAlphabet > ord('z'):
-                stayInAlphabet -= 26
+            if ch.islower():
+                if stayInAlphabet > ord('z'):
+                    stayInAlphabet -= 26
+            elif ch.isupper():
+                    if stayInAlphabet > ord('Z'):
+                        stayInAlphabet -= 26
             finalLetter = chr(stayInAlphabet)
             cipherText += finalLetter
         else:
@@ -172,22 +176,38 @@ class MainHandler(webapp2.RequestHandler):
         password2 = self.request.get('pass2')
         email = self.request.get(escape_html('email'))
         user = username_input
+        if username_input and password1 and password2 and email:
+            if valid_username(username_input) and valid_pass(password1) and password1 == password2 and valid_email(email): #and valid_email(email)   took this out
+                self.redirect('/thanks?username=' + username_input)
 
-        if valid_username(username_input) and valid_pass(password1) and valid_email(email) and password1 == password2:
-            self.redirect('/thanks?username=' + username_input)
+            elif not valid_username(username_input):
+                self.write_form("Invalid UserName", "", "","", username_input, email)
 
-        elif not valid_username(username_input):
-            self.write_form("Invalid UserName", "", "","", username_input, email)
+            elif not valid_pass(password1):
+                self.write_form("", "This Pass Word is not valid","", "", username_input, email)
+            #self.write_form("", "", "", username_input, email)
 
-        elif not valid_pass(password1):
-            self.write_form("", "This Pass Word is not valid","", "", username_input, email)
-        #self.write_form("", "", "", username_input, email)
+            elif password1 != password2:
+                self.write_form("", "","These Passwords Do Not Match", "", username_input, email)
 
-        elif password1 != password2:
-            self.write_form("", "","These Passwords Do Not Match", "", username_input, email)
+            elif not valid_email(email):
+                self.write_form("", "","", "This email is invalid", username_input, email)
 
         else:
-            self.write_form("", "","", "This email is invalid", username_input, email)
+            if valid_username(username_input) and valid_pass(password1) and password1 == password2: #and valid_email(email)   took this out
+                self.redirect('/thanks?username=' + username_input)
+
+            elif not valid_username(username_input):
+                self.write_form("Invalid UserName", "", "","", username_input, email)
+
+            elif not valid_pass(password1):
+                self.write_form("", "This Pass Word is not valid","", "", username_input, email)
+            #self.write_form("", "", "", username_input, email)
+
+            elif password1 != password2:
+                self.write_form("", "","These Passwords Do Not Match", "", username_input, email)
+
+
 
 class ThanksHandler(webapp2.RequestHandler):
 
